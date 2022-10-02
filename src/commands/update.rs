@@ -13,30 +13,41 @@ pub struct Update;
 #[async_trait]
 impl BotCommand for Update {
     async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) -> Result<()> {
-        cmd
-            .create_interaction_response(&ctx.http, |response|
-                response
-                    .kind(InteractionResponseType::ChannelMessageWithSource)
-                    .interaction_response_data(|message|
-                        message.content("Initiated update process".to_string())
-                    ),
-            )
-            .await
-            .unwrap();
+        if cmd.user.id == ctx.http.get_current_application_info().await.unwrap().owner.id {
+            cmd
+                .create_interaction_response(&ctx.http, |response|
+                    response
+                        .kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|message|
+                            message.content("Initiated update process".to_string())
+                        ),
+                )
+                .await
+                .unwrap();
 
-        std::process::Command::new("git")
-            .arg("pull")
-            .status()
-            .unwrap();
+            std::process::Command::new("git")
+                .arg("pull")
+                .status()
+                .unwrap();
 
-        ctx.shard.shutdown_clean();
+            ctx.shard.shutdown_clean();
 
-        std::process::Command::new("cmd")
-            .args(["/C", "start", "cmd", "/c", "cargo run --package thebot --bin thebot"])
-            .spawn()
-            .unwrap();
+            std::process::Command::new("cmd")
+                .args(["/C", "start", "cmd", "/c", "cargo run --package thebot --bin thebot"])
+                .spawn()
+                .unwrap();
 
-        std::process::exit(0);
+            std::process::exit(0);
+        } else {
+            cmd
+                .create_interaction_response(&ctx.http, |response|
+                    response
+                        .kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|message|
+                            message.content("Only my owner can run this command".to_string())
+                        ),
+                ).await
+        }
     }
 
     fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
