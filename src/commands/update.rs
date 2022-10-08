@@ -31,10 +31,12 @@ impl BotCommand for Update {
 
             ctx.shard.shutdown_clean();
 
-            let release_flag = (if !IS_DEBUG { " --release" } else { "" }).to_string();
+            let mut update_command = "cargo run --package thebot --bin thebot".to_owned();
+
+            if !IS_DEBUG { update_command.push_str(" --release") }
 
             std::process::Command::new("cmd")
-                .args(["/C", "start", "cmd", "/c", "cargo run --package thebot --bin thebot", release_flag.as_str()])
+                .args(["/C", "start", "cmd", "/c", update_command.as_str()])
                 .spawn()
                 .unwrap();
 
