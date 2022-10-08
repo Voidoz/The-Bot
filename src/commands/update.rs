@@ -13,7 +13,7 @@ pub struct Update;
 impl BotCommand for Update {
     async fn run(ctx: &Context, cmd: &ApplicationCommandInteraction) -> Result<()> {
         if cmd.user.id == ctx.http.get_current_application_info().await.unwrap().owner.id {
-            cmd
+            let res  = cmd
                 .create_interaction_response(&ctx.http, |response|
                     response
                         .kind(InteractionResponseType::ChannelMessageWithSource)
@@ -37,6 +37,8 @@ impl BotCommand for Update {
                 .args(["/C", "start", "cmd", "/c", update_command.as_str()])
                 .spawn()
                 .unwrap();
+            
+            res.await.expect("Failed to reply to user.");
 
             std::process::exit(0);
         } else {
