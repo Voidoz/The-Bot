@@ -1,7 +1,6 @@
 use serenity::builder::CreateApplicationCommand;
-use serenity::client::bridge::gateway::ShardManager;
 use serenity::client::Context;
-use serenity::model::application::interaction::application_command::{ApplicationCommandInteraction, CommandDataOption};
+use serenity::model::application::interaction::application_command::{ApplicationCommandInteraction};
 use serenity::model::application::interaction::InteractionResponseType;
 use serenity::async_trait;
 use serenity::Result;

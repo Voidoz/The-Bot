@@ -20,7 +20,6 @@ use serenity::{
     },
     prelude::*
 };
-use tokio::join;
 use diesel::{SqliteConnection};
 use diesel::r2d2::{ConnectionManager, Pool};
 
@@ -47,9 +46,8 @@ impl EventHandler for Handler {
         let dev_channel = get_config(&mut con.get().unwrap()).unwrap().dev_channel;
 
         if helpers::should_handle(&message.channel_id, &dev_channel) {
-            let dad = handlers::Dad::run(&ctx, &message);
-
-            join!(dad);
+            if handlers::Dad::run(&ctx, &message).await { return; }
+            else if handlers::SkillIssue::run(&ctx, &message).await { return; }
         }
     }
 

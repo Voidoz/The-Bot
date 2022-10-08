@@ -1,6 +1,6 @@
-use serenity::builder::{CreateApplicationCommand, CreateInteractionResponse};
+use serenity::builder::{CreateApplicationCommand};
 use serenity::client::Context;
-use serenity::model::application::interaction::application_command::{ApplicationCommandInteraction, CommandDataOption};
+use serenity::model::application::interaction::application_command::{ApplicationCommandInteraction};
 use serenity::Result;
 use serenity::async_trait;
 

@@ -1,18 +1,8 @@
 use serenity::{
     builder::{
         CreateApplicationCommand
-    },
-    model::{
-        prelude::{
-            interaction::{
-                application_command::{
-                    CommandDataOption
-                }
-            }
-        }
     }
 };
-use serenity::builder::CreateInteractionResponse;
 use serenity::client::Context;
 use serenity::model::application::interaction::InteractionResponseType;
 use serenity::model::prelude::interaction::application_command::ApplicationCommandInteraction;
