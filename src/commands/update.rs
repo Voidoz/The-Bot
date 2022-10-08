@@ -18,11 +18,9 @@ impl BotCommand for Update {
                     response
                         .kind(InteractionResponseType::ChannelMessageWithSource)
                         .interaction_response_data(|message|
-                            message.content("Initiated update process".to_string())
+                            message.content("Initiating update process".to_string())
                         ),
-                )
-                .await
-                .unwrap();
+                );
 
             std::process::Command::new("git")
                 .arg("pull")
