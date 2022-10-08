@@ -48,6 +48,7 @@ impl EventHandler for Handler {
         if helpers::should_handle(&message.channel_id, &dev_channel) {
             if handlers::Dad::run(&ctx, &message).await { return; }
             else if handlers::SkillIssue::run(&ctx, &message).await { return; }
+            else if handlers::UrMum::run(&ctx, &message).await { return; }
         }
     }
 
