@@ -4,7 +4,9 @@ mod commands;
 mod database;
 mod handlers;
 mod helpers;
+pub mod js;
 
+use deno_core::anyhow::Error;
 use serenity::{
     async_trait,
     model::{
@@ -22,8 +24,8 @@ use serenity::{
 };
 use diesel::{SqliteConnection};
 use diesel::r2d2::{ConnectionManager, Pool};
-
 use crate::commands::BotCommand;
+use crate::commands::run::RunData;
 use crate::database::{get_config, get_connection_pool};
 use crate::handlers::BotHandler;
 
@@ -58,6 +60,7 @@ impl EventHandler for Handler {
         let guild_command = Command::set_global_application_commands(&ctx.http, |cmds| {
             cmds
                 .create_application_command(|cmd| commands::Ping::register(cmd))
+                .create_application_command(|cmd| commands::Run::register(cmd))
                 .create_application_command(|cmd| commands::Update::register(cmd))
         })
             .await;
@@ -66,11 +69,13 @@ impl EventHandler for Handler {
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        let data = ctx.data.read().await;
+        let dev_channel = {
+            let data = ctx.data.read().await;
 
-        let con = data.get::<PoolData>().unwrap();
+            let con = data.get::<PoolData>().unwrap();
 
-        let dev_channel = get_config(&mut con.get().unwrap()).unwrap().dev_channel;
+            get_config(&mut con.get().unwrap()).unwrap().dev_channel
+        };
 
         match interaction {
             Interaction::ApplicationCommand(command) =>
@@ -78,17 +83,18 @@ impl EventHandler for Handler {
                     println!("Received command interaction: {:#?}", dev_channel);
 
                     if let Err(why) = match command.data.name.as_str() {
-                        "ping" => commands::Ping::run(&ctx, &command),
-                        "update" => commands::Update::run(&ctx, &command),
+                        "ping" => commands::Ping::run(&ctx, &command).await,
+                        "update" => commands::Update::run(&ctx, &command).await,
+                        commands::run::NAME => commands::Run::run(&ctx, &command).await,
                         _ => Box::pin(command
-                            .create_interaction_response(&ctx.http, |response|
+                            .create_interaction_response(ctx.http, |response|
                                 response
                                     .kind(InteractionResponseType::ChannelMessageWithSource)
                                     .interaction_response_data(|message|
                                         message.content("not implemented :(".to_string())
                                     )
-                            ))
-                    }.await {
+                            )).await.map_err(Error::from)
+                    } {
                         println!("Cannot respond to slash command: {}", why);
                     }
                 },
@@ -118,6 +124,7 @@ async fn main() {
     {
         let mut data = client.data.write().await;
         data.insert::<PoolData>(pool);
+        data.insert::<RunData>(RunData::default());
     }
 
     client.start().await.unwrap();
